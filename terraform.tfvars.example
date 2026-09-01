@@ -1,0 +1,152 @@
+# ==============================================================================
+#  azure-virtual-machine — terraform.tfvars
+# ==============================================================================
+#  Copy this file to `terraform.tfvars`, set the values, then run:
+#      tofu init && tofu apply        (or:  terraform init && terraform apply)
+#
+# AUTHENTICATION — Azure:
+#   The azurerm (and azuread) providers authenticate to Microsoft Entra ID
+#   (Azure AD) and resolve credentials in this order: explicit OIDC, then
+#   client certificate, then client secret, then Managed Identity, then Azure
+#   CLI.
+#   Quick start: az login (then `az account set --subscription <id>`; `az
+#   login --use-device-code` for headless, `az login --service-principal -u
+#   <appId> -p <secret> --tenant <tenant>` for SP).
+#   Environment variables Terraform reads:
+#     ARM_SUBSCRIPTION_ID — Target subscription GUID; required for plan/apply in provider v4.x.
+#     ARM_TENANT_ID — Entra ID (Azure AD) tenant GUID.
+#     ARM_CLIENT_ID — App registration / service principal (or user-assigned MSI) client id.
+#     ARM_CLIENT_SECRET  (secret) — Service principal client secret (secret-based auth).
+#     ARM_CLIENT_CERTIFICATE_PATH — Path to the PKCS#12 (.pfx) client certificate.
+#   Full guide (auth + remote state):  docs/CONNECTING-PROVIDERS.md#azure
+#
+#  Secrets below read "REPLACE_ME" — never commit real secrets. Prefer
+#  TF_VAR_<name> environment variables or a secrets manager.
+#  Status: static-validated, live-test pending (see README.md).
+# ==============================================================================
+
+
+# ------------------------------------------------------------------------------
+#  REQUIRED — you must set these
+# ------------------------------------------------------------------------------
+
+# location  —  string  (REQUIRED)
+#   Azure region for all resources (e.g. eastus, westeurope).
+location = "REPLACE_ME"
+
+# allowed_source_cidr  —  string  (REQUIRED)
+#   Constraint: allowed_source_cidr must be a valid IPv4 CIDR (e.g.
+#   203.0.113.10/32).
+allowed_source_cidr  = "REPLACE_ME"
+
+# admin_ssh_public_key  —  string  (REQUIRED)
+#   REQUIRED. OpenSSH public key for the admin user (password auth is disabled,
+#   so this is the only way in). E.g. file("~/.ssh/id_ed25519.pub").
+#   Constraint: admin_ssh_public_key must be an OpenSSH public key (starts with
+#   ssh-ed25519, ssh-rsa or ecdsa-sha2-).
+admin_ssh_public_key = "REPLACE_ME"
+
+# ------------------------------------------------------------------------------
+#  OPTIONAL — defaults shown; uncomment a line to override
+# ------------------------------------------------------------------------------
+
+# name  —  string  (optional, default: "linux-vm")
+#   Base name for the deployment; prefixes the VM, NIC, NSG, public IP, VNet and
+#   (when derived) the resource group. Also used as the Linux computer name.
+#   Constraint: name must be 2-32 chars: lowercase letters, digits and hyphens;
+#   start and end alphanumeric (keeps the Linux computer name valid).
+name     = "iacbazaar-vm"
+
+# resource_group_name  —  string  (optional, default: null)
+#   Name of the resource group to create. Null derives "rg-<name>". This module
+#   is self-contained and creates (and on destroy removes) this resource group.
+# resource_group_name = null
+
+# vnet_address_space  —  list  (optional, default: ["10.30.0.0/16"])
+#   Address space for the virtual network created for the VM.
+#   Constraint: vnet_address_space must contain at least one CIDR block.
+# vnet_address_space = ["10.30.0.0/16"]
+
+# subnet_address_prefixes  —  list  (optional, default: ["10.30.1.0/24"])
+#   Address prefixes for the subnet the VM NIC lives in (must fall within
+#   vnet_address_space).
+#   Constraint: subnet_address_prefixes must contain at least one CIDR block.
+# subnet_address_prefixes = ["10.30.1.0/24"]
+
+# create_public_ip  —  bool  (optional, default: true)
+#   Attach a Standard static public IP to the VM so it is reachable from the
+#   internet (still gated by allowed_source_cidr). Set false to keep the VM
+#   private-only (reach it via bastion/VPN/private peering).
+# create_public_ip = true
+
+# ssh_port  —  number  (optional, default: 22)
+#   TCP port SSH listens on (opened in the NSG from allowed_source_cidr). The OS
+#   sshd still defaults to 22 unless you reconfigure it via custom_data.
+#   Constraint: ssh_port must be between 1 and 65535.
+# ssh_port = 22
+
+# vm_size  —  string  (optional, default: "Standard_B1s")
+#   VM size. Standard_B1s is the cheapest burstable size for
+#   light/general-purpose workloads; bump to Standard_B2s / Standard_D2s_v5+ for
+#   real workloads.
+vm_size = "Standard_B1s"
+
+# admin_username  —  string  (optional, default: "azureuser")
+#   Local admin username on the VM (SSH-key auth only; password auth is
+#   disabled).
+#   Constraint: admin_username must be a valid Linux username (lowercase, starts
+#   with a letter/underscore).
+# admin_username = "azureuser"
+
+# os_disk_type  —  string  (optional, default: "StandardSSD_LRS")
+#   Managed-disk SKU for the OS disk. StandardSSD_LRS is a cheap, durable
+#   default; Premium_LRS for production IOPS.
+#   Constraint: os_disk_type must be a valid managed-disk SKU.
+# os_disk_type = "StandardSSD_LRS"
+
+# os_disk_size_gb  —  number  (optional, default: 32)
+#   OS disk size in GB (must be >= the image's minimum, typically 30).
+#   Constraint: os_disk_size_gb must be between 30 and 4095.
+# os_disk_size_gb = 32
+
+# source_image  —  object  (optional, default: {})
+#   Marketplace image for the VM. Defaults to Ubuntu 22.04 LTS (Gen2).
+# source_image = {}
+
+# encryption_at_host_enabled  —  bool  (optional, default: false)
+#   Encrypt the VM's temp disk and OS/data disk caches on the host (in addition
+#   to the always-on at-rest disk encryption). Off by default because it
+#   requires the subscription-level EncryptionAtHost feature to be registered
+#   and a supporting VM size; enable for production where supported.
+# encryption_at_host_enabled = false
+
+# secure_boot_enabled  —  bool  (optional, default: false)
+#   Enable UEFI Secure Boot (Trusted Launch). Off by default for broad VM-size
+#   compatibility (incl. the cheapest B1s); enable on a Trusted-Launch-capable
+#   size for production.
+# secure_boot_enabled = false
+
+# vtpm_enabled  —  bool  (optional, default: false)
+#   Enable the virtual TPM (Trusted Launch). Off by default; enable together
+#   with secure_boot_enabled on a Trusted-Launch-capable size.
+# vtpm_enabled = false
+
+# allow_extension_operations  —  bool  (optional, default: true)
+#   Allow VM extension operations on the guest. On by default because core
+#   platform tooling (Azure Monitor agent, AAD SSH login, custom-script
+#   bootstrap) is delivered as VM extensions; set false to reduce the guest
+#   attack surface on hardened images.
+# allow_extension_operations = true
+
+# custom_data  —  string  (optional, default: null)
+#   Optional bootstrap cloud-init / shell script run on first boot. Null means
+#   no bootstrap (a plain general-purpose VM). Provide raw (un-encoded) content;
+#   the module base64-encodes it.
+# custom_data = null
+
+# tags  —  map  (optional, default: {})
+#   Tags applied to all resources.
+tags = {
+  Environment = "example"
+  ManagedBy   = "iac-bazaar"
+}
