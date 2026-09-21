@@ -1,5 +1,7 @@
 # Azure Linux Virtual Machine (self-contained)
 
+[![IaC Bazaar: live-tested](https://www.iac-bazaar.com/api/artifacts/azure-virtual-machine/badge)](https://www.iac-bazaar.com/catalog/azure-virtual-machine?utm_source=syndication&utm_medium=readme&utm_campaign=artifact)
+
 A fully self-contained general-purpose Linux VM on Azure - one apply creates the resource group, VNet, subnet, NSG, NIC, optional public IP and an SSH-key-only VM with a system-assigned identity.
 
 This module was **applied to a real Azure account, verified, and destroyed** on 2026-06-30 - not just `terraform validate`d.
@@ -45,7 +47,8 @@ azurerm >= 4.0, < 5.0
 
 ## More modules
 
-This is one of **179 verified Terraform modules across 19 cloud platforms** -
+This is one of **673 Terraform modules across 19 cloud platforms** on
+IaC Bazaar, 113 of them live-tested:
 AWS, Azure, GCP, Oracle OCI, Cloudflare, Akamai, DigitalOcean, Linode, Hetzner,
 Vultr, Scaleway, Alibaba, IBM, UpCloud, Civo, Exoscale, OVH, Tencent and Huawei.
 
@@ -53,7 +56,7 @@ Browse the full catalogue at **[www.iac-bazaar.com](https://www.iac-bazaar.com)*
 production landing zones for AWS, Azure and GCP that have each been live-tested
 as a single composed apply.
 
-- Module page: [https://www.iac-bazaar.com/catalog/azure-virtual-machine](https://www.iac-bazaar.com/catalog/azure-virtual-machine)
+- Terraform module 1.0.0, live-tested on IaC Bazaar: [Azure Linux Virtual Machine (self-contained)](https://www.iac-bazaar.com/catalog/azure-virtual-machine?utm_source=syndication&utm_medium=readme&utm_campaign=artifact)
 - How verification works: [https://www.iac-bazaar.com/verified](https://www.iac-bazaar.com/verified)
 
 ## Licence
